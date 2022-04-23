@@ -2,17 +2,17 @@
 //
 // This is a sample recipes API. You can find out more about the API at https://github.com/PacktPublishing/Building-Distributed-Applications-in-Gin.
 //
-// Schemes: http
-// Host: localhost:8080
-// BasePath: /
-// Version: 1.0.0
-// Contact: Sanjay Sachdev<ssachdev.pros@gmail.com>
+//	Schemes: http
+//  Host: localhost:8080
+//	BasePath: /
+//	Version: 1.0.0
+//	Contact: Sanjay Sachdev <ssachdev.pros@gmail.com>
 //
-// Consumes:
-// - application/json
+//	Consumes:
+//	- application/json
 //
-// Produces:
-// - application/json
+//	Produces:
+//	- application/json
 // swagger:meta
 package main
 
@@ -27,7 +27,9 @@ import (
 	"github.com/rs/xid"
 )
 
+// swagger:parameters recipes newRecipe
 type Recipe struct {
+	//swagger:ignore
 	ID           string    `json:id`
 	Name         string    `json:"name"`
 	Tags         []string  `json:"tags"`
@@ -47,14 +49,6 @@ func init() {
 // swagger:operation POST /recipes recipes newRecipes
 // Add a new recipe
 // ---
-// consumes:
-// - application/json
-// parameters:
-// - name: recipe
-//   in: body
-//   description: The recipe to create.
-//   schema:
-//     $ref: '#/definitions/User'
 // produces:
 // - application/json
 // responses:
@@ -62,20 +56,6 @@ func init() {
 //     description: Successful operation
 //   '400':
 //     description: Invalid input
-// defintions:
-//   Recipe:
-//     properties:
-//       name:
-//         type: string
-//       tags:
-//         type: array
-//         items: string
-//       ingredients:
-//         type: array
-//         items: string
-//       instructions:
-//         type: array
-//         items: string
 func NewRecipeHandler(c *gin.Context) {
 	var recipe Recipe
 	if err := c.ShouldBindJSON(&recipe); err != nil {
@@ -117,7 +97,7 @@ func ListRecipesHandler(c *gin.Context) {
 //     description: Successful operation
 //   '400':
 //     description: Invalid input
-//   '401':
+//   '404':
 //     description: Invalid recipe ID
 func UpdateRecipeHandler(c *gin.Context) {
 	id := c.Param("id")
@@ -208,6 +188,42 @@ func SearchRecipeHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, listOfRecipes)
 }
 
+// swagger:operation GET /recipes/{id} recipes getRecipe
+// Get an existing recipe
+// ---
+// parameters:
+// - name: id
+//   in: path
+//   description: ID of the recipe
+//   required: true
+//   type: string
+// produces:
+// - application/json
+// responses:
+//   '200':
+//     description: Successful operation
+//     content:
+//       application/json:
+//         schema:
+//           $ref: '#/components/schemas/Recipe'
+//   '401':
+//     description: Invalid recipe ID
+func GetRecipeHandler(c *gin.Context) {
+	id := c.Param("id")
+	var result *Recipe
+	for _, recipe := range recipes {
+		if recipe.ID == id {
+			result = &recipe
+			break
+		}
+	}
+	if result == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Recipe not found"})
+		return
+	}
+	c.JSON(http.StatusOK, *result)
+}
+
 func main() {
 	router := gin.Default()
 	router.POST("/recipes", NewRecipeHandler)
@@ -215,6 +231,7 @@ func main() {
 	router.PUT("/recipes/:id", UpdateRecipeHandler)
 	router.DELETE("/recipes/:id", DeleteReecipeHandler)
 	router.GET("/recipes/search", SearchRecipeHandler)
+	router.GET("/recipes/:id", GetRecipeHandler)
 
 	router.Run()
 }
