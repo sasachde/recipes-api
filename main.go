@@ -44,6 +44,38 @@ func init() {
 	_ = json.Unmarshal([]byte(file), &recipes)
 }
 
+// swagger:operation POST /recipes recipes newRecipes
+// Add a new recipe
+// ---
+// consumes:
+// - application/json
+// parameters:
+// - name: recipe
+//   in: body
+//   description: The recipe to create.
+//   schema:
+//     $ref: '#/definitions/User'
+// produces:
+// - application/json
+// responses:
+//   '200':
+//     description: Successful operation
+//   '400':
+//     description: Invalid input
+// defintions:
+//   Recipe:
+//     properties:
+//       name:
+//         type: string
+//       tags:
+//         type: array
+//         items: string
+//       ingredients:
+//         type: array
+//         items: string
+//       instructions:
+//         type: array
+//         items: string
 func NewRecipeHandler(c *gin.Context) {
 	var recipe Recipe
 	if err := c.ShouldBindJSON(&recipe); err != nil {
@@ -111,6 +143,22 @@ func UpdateRecipeHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, recipe)
 }
 
+// swagger:operation DELETE /recipes/{id} recipes deleteRecipes
+// Delete an existing recipe
+// ---
+// parameters:
+// - name: id
+//   in: path
+//   description: ID of the recipe
+//   required: true
+//   type: string
+// produces:
+// - application/json
+// responses:
+//   '200':
+//     description: Successful operation
+//   '401':
+//     description: Invalid recipe ID
 func DeleteReecipeHandler(c *gin.Context) {
 	id := c.Param("id")
 	index := -1
@@ -128,6 +176,20 @@ func DeleteReecipeHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Recipe has been deleted"})
 }
 
+// swagger:operation GET /recipes?tag={tag} recipes searchRecipes
+// Search an existing recipe
+// ---
+// parameters:
+// - name: tag
+//   in: query
+//   description: Tag of the recipe to search
+//   required: true
+//   type: string
+// produces:
+// - application/json
+// responses:
+//   '200':
+//     description: Successful operation
 func SearchRecipeHandler(c *gin.Context) {
 	tag := c.Query("tag")
 	listOfRecipes := make([]Recipe, 0)
